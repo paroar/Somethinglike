@@ -1,0 +1,51 @@
+version: "3.1"
+
+services:
+
+  postgres:
+    image: postgres:12.3
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: movielens
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+
+  adminer:
+    image: adminer:4.7.7
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - postgres
+
+  recommender:
+    image: recommender:0.1
+    ports:
+      - "9000:9000"
+    networks:
+      - postgres
+    depends_on:
+      - postgres
+
+  crontab:
+    image: crontab:0.1
+    ports:
+      - "9001:9001"
+    volumes:
+      - ./../Crontab/src/main/resources/:/opt/docker/resources
+    networks:
+      - postgres
+    depends_on:
+      - recommender
+      - postgres
+
+networks:
+  postgres:
+volumes:
+  pgdata:
